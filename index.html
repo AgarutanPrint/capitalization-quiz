@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capitalization Quiz 🏰</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal:    #2BBFB0;
+    --navy:    #1B3A6B;
+    --yellow:  #FFD94A;
+    --coral:   #FF6B6B;
+    --green:   #27AE60;
+    --purple:  #7B5EA7;
+    --bg:      #FEFDF6;
+    --white:   #FFFFFF;
+    --gray:    #666666;
+    --lgray:   #F0F0E8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Decorative background dots ── */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image:
+      radial-gradient(circle, #2BBFB020 1px, transparent 1px),
+      radial-gradient(circle, #FFD94A20 1px, transparent 1px);
+    background-size: 40px 40px, 60px 60px;
+    background-position: 0 0, 20px 20px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    padding: 24px 0 16px;
+  }
+  .header h1 {
+    font-family: 'Baloo 2', cursive;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 800;
+    color: var(--navy);
+    line-height: 1.1;
+  }
+  .header h1 span { color: var(--teal); }
+  .header p {
+    color: var(--gray);
+    font-size: 0.95rem;
+    margin-top: 6px;
+  }
+
+  /* ── Screen management ── */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 16px;
+  }
+
+  /* ── Section Select Screen ── */
+  .section-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .section-btn {
+    background: var(--white);
+    border: 2.5px solid var(--lgray);
+    border-radius: 16px;
+    padding: 18px 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-family: 'Nunito', sans-serif;
+  }
+  .section-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+  .section-btn .sec-emoji { font-size: 2rem; display: block; margin-bottom: 8px; }
+  .section-btn .sec-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray);
+  }
+  .section-btn .sec-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-top: 2px;
+    line-height: 1.3;
+  }
+  .section-btn.s1 { border-color: var(--teal);   background: #D6F5F2; }
+  .section-btn.s2 { border-color: var(--yellow);  background: #FFF8CC; }
+  .section-btn.s3 { border-color: var(--coral);   background: #FFE8E8; }
+  .section-btn.s4 { border-color: var(--purple);  background: #F0EBF8; }
+  .section-btn.s5 { border-color: var(--navy);    background: #E8EDF5; grid-column: 1 / -1; }
+
+  /* ── Progress bar ── */
+  .progress-wrap {
+    background: var(--lgray);
+    border-radius: 999px;
+    height: 10px;
+    margin: 12px 0;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--teal), var(--navy));
+    transition: width 0.4s ease;
+  }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--gray);
+    font-weight: 600;
+  }
+
+  /* ── Score display ── */
+  .score-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--yellow);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: var(--navy);
+  }
+
+  /* ── Question card ── */
+  .question-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray);
+    margin-bottom: 8px;
+  }
+  .question-text {
+    font-family: 'Baloo 2', cursive;
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+  .wrong-sentence {
+    background: #FFE8E8;
+    border: 2px solid var(--coral);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 1.05rem;
+    color: var(--coral);
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .wrong-sentence::before { content: '✗'; font-size: 1.2rem; }
+
+  /* ── Answer input ── */
+  .answer-input {
+    width: 100%;
+    border: 2.5px solid var(--lgray);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 1rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    color: var(--navy);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 12px;
+  }
+  .answer-input:focus { border-color: var(--teal); }
+  .answer-input.correct { border-color: var(--green); background: #E8F8EE; }
+  .answer-input.wrong { border-color: var(--coral); background: #FFE8E8; }
+
+  /* ── Multiple choice ── */
+  .choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+  .choice-btn {
+    background: var(--white);
+    border: 2.5px solid var(--lgray);
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    text-align: left;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--navy);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .choice-btn:hover:not(:disabled) { border-color: var(--teal); background: #D6F5F2; transform: translateX(4px); }
+  .choice-btn .choice-letter {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--lgray);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .choice-btn.correct-choice { border-color: var(--green); background: #E8F8EE; }
+  .choice-btn.correct-choice .choice-letter { background: var(--green); color: white; }
+  .choice-btn.wrong-choice { border-color: var(--coral); background: #FFE8E8; }
+  .choice-btn.wrong-choice .choice-letter { background: var(--coral); color: white; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .btn:active { transform: translateY(0); }
+  .btn-teal { background: var(--teal); color: white; }
+  .btn-navy { background: var(--navy); color: white; }
+  .btn-yellow { background: var(--yellow); color: var(--navy); }
+  .btn-coral { background: var(--coral); color: white; }
+  .btn-green { background: var(--green); color: white; }
+  .btn-outline {
+    background: transparent;
+    border: 2.5px solid var(--lgray);
+    color: var(--navy);
+  }
+  .btn-sm { padding: 10px 20px; font-size: 0.9rem; width: auto; }
+  .btn-row { display: flex; gap: 10px; }
+  .btn-row .btn { flex: 1; }
+
+  /* ── Feedback ── */
+  .feedback {
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    font-weight: 700;
+    display: none;
+    animation: popIn 0.3s ease;
+  }
+  @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .feedback.show { display: block; }
+  .feedback.correct-fb { background: #E8F8EE; border: 2px solid var(--green); color: #1a7a40; }
+  .feedback.wrong-fb { background: #FFE8E8; border: 2px solid var(--coral); color: #c0392b; }
+  .feedback .fb-title { font-size: 1.1rem; margin-bottom: 4px; }
+  .feedback .fb-explain { font-weight: 600; font-size: 0.9rem; opacity: 0.85; }
+
+  /* ── Results screen ── */
+  .result-circle {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal), var(--navy));
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 24px rgba(43,191,176,0.3);
+  }
+  .result-circle .result-score {
+    font-family: 'Baloo 2', cursive;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+  }
+  .result-circle .result-label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.8);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .stars { font-size: 2rem; text-align: center; margin-bottom: 12px; letter-spacing: 4px; }
+  .result-message {
+    text-align: center;
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 20px;
+  }
+  .result-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat-box {
+    background: var(--lgray);
+    border-radius: 12px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .stat-box .stat-val {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--navy);
+  }
+  .stat-box .stat-lbl {
+    font-size: 0.7rem;
+    color: var(--gray);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Tip box ── */
+  .tip-box {
+    background: #FFF8CC;
+    border: 2px solid var(--yellow);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    color: var(--navy);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .tip-box strong { color: var(--teal); }
+
+  /* ── Section title bar ── */
+  .section-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .section-title-tag {
+    background: var(--navy);
+    color: white;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Confetti animation ── */
+  .confetti-wrap {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 400px) {
+    .section-grid { grid-template-columns: 1fr; }
+    .section-btn.s5 { grid-column: 1; }
+    .btn-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🏰 Capitalization <span>Quiz</span></h1>
+    <p>Practice makes perfect! Choose a section to begin.</p>
+  </div>
+
+  <!-- ══ SCREEN 1: Section Select ══ -->
+  <div class="screen active" id="screen-select">
+    <div class="card">
+      <div class="question-label">📚 Choose Your Section</div>
+      <div class="section-grid">
+        <button class="section-btn s1" onclick="startSection(1)">
+          <span class="sec-emoji">✏️</span>
+          <div class="sec-num">Section 1</div>
+          <div class="sec-title">Beginning of Sentences</div>
+        </button>
+        <button class="section-btn s2" onclick="startSection(2)">
+          <span class="sec-emoji">👁️</span>
+          <div class="sec-num">Section 2</div>
+          <div class="sec-title">The Word "I"</div>
+        </button>
+        <button class="section-btn s3" onclick="startSection(3)">
+          <span class="sec-emoji">🗺️</span>
+          <div class="sec-num">Section 3</div>
+          <div class="sec-title">Names & Places</div>
+        </button>
+        <button class="section-btn s4" onclick="startSection(4)">
+          <span class="sec-emoji">📅</span>
+          <div class="sec-num">Section 4</div>
+          <div class="sec-title">Days & Months</div>
+        </button>
+        <button class="section-btn s5" onclick="startSection(5)">
+          <span class="sec-emoji">🌟</span>
+          <div class="sec-num">Section 5</div>
+          <div class="sec-title">Mixed Practice — All Rules!</div>
+        </button>
+      </div>
+    </div>
+    <div class="tip-box">
+      💡 <strong>Tip:</strong> Work through sections in order — each one builds on the last!
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 2: Quiz ══ -->
+  <div class="screen" id="screen-quiz">
+    <div class="section-bar">
+      <span class="section-title-tag" id="quiz-section-tag">Section 1</span>
+      <span class="score-badge">⭐ <span id="score-display">0</span> pts</span>
+    </div>
+
+    <div class="progress-info">
+      <span id="q-counter">Question 1 of 10</span>
+      <span id="q-percent">0%</span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+    </div>
+
+    <div class="card" id="question-card">
+      <div class="question-label" id="q-type-label">Fix the Sentence</div>
+      <div class="question-text" id="q-text"></div>
+      <div class="wrong-sentence" id="q-sentence" style="display:none"></div>
+
+      <!-- Type answer input -->
+      <div id="input-area" style="display:none">
+        <input type="text" class="answer-input" id="answer-input"
+               placeholder="Type the corrected sentence here..."
+               onkeydown="if(event.key==='Enter') checkAnswer()">
+        <button class="btn btn-teal" onclick="checkAnswer()">✅ Check Answer</button>
+      </div>
+
+      <!-- Multiple choice -->
+      <div class="choices" id="choices-area" style="display:none"></div>
+
+      <!-- Feedback -->
+      <div class="feedback" id="feedback">
+        <div class="fb-title" id="fb-title"></div>
+        <div class="fb-explain" id="fb-explain"></div>
+      </div>
+
+      <button class="btn btn-navy" id="next-btn" style="display:none" onclick="nextQuestion()">
+        Next Question →
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 3: Results ══ -->
+  <div class="screen" id="screen-results">
+    <div class="card" style="text-align:center">
+      <div class="result-circle">
+        <div class="result-score" id="final-score">0</div>
+        <div class="result-label">points</div>
+      </div>
+      <div class="stars" id="stars-display">⭐⭐⭐</div>
+      <div class="result-message" id="result-message">Great job!</div>
+      <div class="result-stats">
+        <div class="stat-box">
+          <div class="stat-val" id="stat-correct">0</div>
+          <div class="stat-lbl">✅ Correct</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-wrong">0</div>
+          <div class="stat-lbl">❌ Wrong</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-pct">0%</div>
+          <div class="stat-lbl">🎯 Score</div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="retrySection()">🔄 Try Again</button>
+        <button class="btn btn-teal" onclick="backToMenu()">🏠 Menu</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Confetti container -->
+<div class="confetti-wrap" id="confetti"></div>
+
+<script>
+// ════════════════════════════════════════════════
+// QUIZ DATA
+// ════════════════════════════════════════════════
+
+const SECTIONS = {
+  1: {
+    name: "Beginning of Sentences",
+    emoji: "✏️",
+    color: "#2BBFB0",
+    tip: "Remember: Every sentence starts with a CAPITAL letter!",
+    questions: [
+      { type: "fix", sentence: "my dog is very fluffy.", answer: "My dog is very fluffy.", explain: "my → My (first word of sentence)" },
+      { type: "fix", sentence: "the sun is very bright today.", answer: "The sun is very bright today.", explain: "the → The (first word of sentence)" },
+      { type: "fix", sentence: "we have art class today.", answer: "We have art class today.", explain: "we → We (first word of sentence)" },
+      { type: "fix", sentence: "her bag is pink and white.", answer: "Her bag is pink and white.", explain: "her → Her (first word of sentence)" },
+      { type: "fix", sentence: "our teacher is very kind.", answer: "Our teacher is very kind.", explain: "our → Our (first word of sentence)" },
+      { type: "choose", question: "Which sentence is correct?", choices: ["We like to play outside.", "we like to play outside.", "WE like to play outside."], answer: 0, explain: "We → correct capital at start of sentence" },
+      { type: "choose", question: "Which sentence is correct?", choices: ["her cat is very small.", "HER cat is very small.", "Her cat is very small."], answer: 2, explain: "Her → correct capital at start of sentence" },
+      { type: "fix", sentence: "they are playing in the garden.", answer: "They are playing in the garden.", explain: "they → They (first word of sentence)" },
+      { type: "choose", question: "Which sentence is correct?", choices: ["There is a bird on the tree.", "THERE is a bird on the tree.", "there is a bird on the tree."], answer: 0, explain: "There → correct capital at start of sentence" },
+      { type: "fix", sentence: "it is a sunny day.", answer: "It is a sunny day.", explain: "it → It (first word of sentence)" },
+    ]
+  },
+  2: {
+    name: 'The Word "I"',
+    emoji: "👁️",
+    color: "#FFD94A",
+    tip: 'Remember: The word "I" is ALWAYS a capital letter — anywhere in the sentence!',
+    questions: [
+      { type: "fix", sentence: "My friend and i like to draw.", answer: "My friend and I like to draw.", explain: 'i → I (the word "I" is always capital)' },
+      { type: "fix", sentence: "i love reading books.", answer: "I love reading books.", explain: 'i → I (start of sentence + always capital)' },
+      { type: "fix", sentence: "My mom and i go shopping together.", answer: "My mom and I go shopping together.", explain: 'i → I (the word "I" is always capital)' },
+      { type: "fix", sentence: "At school i sit next to my friend.", answer: "At school I sit next to my friend.", explain: 'i → I (the word "I" is always capital)' },
+      { type: "fix", sentence: "My brother and i share a room.", answer: "My brother and I share a room.", explain: 'i → I (the word "I" is always capital)' },
+      { type: "choose", question: "Which sentence is correct?", choices: ["My dad and I work in the garden.", "My dad and i work in the garden.", "my dad and I work in the garden."], answer: 0, explain: 'I → always capital, My → capital at start' },
+      { type: "fix", sentence: "i have a very funny cat.", answer: "I have a very funny cat.", explain: 'i → I (start of sentence + always capital)' },
+      { type: "choose", question: "Which sentence is correct?", choices: ["After school i do my homework.", "After school I do my homework.", "after school I do my homework."], answer: 1, explain: 'I → always capital, After → capital at start' },
+      { type: "fix", sentence: "My cat and i sleep on the sofa.", answer: "My cat and I sleep on the sofa.", explain: 'i → I (the word "I" is always capital)' },
+      { type: "fix", sentence: "On weekends i wake up late.", answer: "On weekends I wake up late.", explain: 'i → I (the word "I" is always capital)' },
+    ]
+  },
+  3: {
+    name: "Names & Places",
+    emoji: "🗺️",
+    color: "#FF6B6B",
+    tip: "Remember: Names of people and places always start with a capital letter!",
+    questions: [
+      { type: "fix", sentence: "My best friend oliver lives next door.", answer: "My best friend Oliver lives next door.", explain: "oliver → Oliver (name of a person)" },
+      { type: "fix", sentence: "We visited dr. smith at the clinic.", answer: "We visited Dr. Smith at the clinic.", explain: "dr. → Dr. / smith → Smith (title + name)" },
+      { type: "fix", sentence: "Our teacher is miss lucy.", answer: "Our teacher is Miss Lucy.", explain: "miss → Miss / lucy → Lucy (title + name)" },
+      { type: "fix", sentence: "My friend emma lives in london.", answer: "My friend Emma lives in London.", explain: "emma → Emma (name) / london → London (place)" },
+      { type: "fix", sentence: "We went to paris with mr. brown.", answer: "We went to Paris with Mr. Brown.", explain: "paris → Paris (place) / mr. → Mr. / brown → Brown" },
+      { type: "choose", question: "Which sentence is correct?", choices: ["My friend tom lives next door.", "My friend Tom lives next door.", "My Friend Tom lives next door."], answer: 1, explain: "Tom → name (capital) / friend stays lowercase" },
+      { type: "choose", question: "Which sentence is correct?", choices: ["Our teacher is mrs. Clark.", "Our teacher is Mrs. clark.", "Our teacher is Mrs. Clark."], answer: 2, explain: "Mrs. → title / Clark → name (both capital)" },
+      { type: "fix", sentence: "Our class went to new york last summer.", answer: "Our class went to New York last summer.", explain: "new york → New York (place — both words capital!)" },
+      { type: "choose", question: "Which sentence is correct?", choices: ["We went to rome last summer.", "We went to Rome last summer.", "We went to Rome Last summer."], answer: 1, explain: "Rome → place name (capital) / last stays lowercase" },
+      { type: "fix", sentence: "My friend lily moved to australia.", answer: "My friend Lily moved to Australia.", explain: "lily → Lily (name) / australia → Australia (place)" },
+    ]
+  },
+  4: {
+    name: "Days & Months",
+    emoji: "📅",
+    color: "#7B5EA7",
+    tip: "Remember: Days of the week and months of the year always start with a capital letter!",
+    questions: [
+      { type: "fix", sentence: "My birthday is in august.", answer: "My birthday is in August.", explain: "august → August (month of the year)" },
+      { type: "fix", sentence: "We have art class every tuesday.", answer: "We have art class every Tuesday.", explain: "tuesday → Tuesday (day of the week)" },
+      { type: "fix", sentence: "School starts on 1st september.", answer: "School starts on 1st September.", explain: "september → September (month of the year)" },
+      { type: "fix", sentence: "I love saturday mornings.", answer: "I love Saturday mornings.", explain: "saturday → Saturday (day of the week)" },
+      { type: "fix", sentence: "My mom's birthday is on 12th march.", answer: "My mom's birthday is on 12th March.", explain: "march → March (month of the year)" },
+      { type: "choose", question: "Which sentence is correct?", choices: ["I go to the park every Sunday.", "I go to the park every sunday.", "i go to the park every Sunday."], answer: 0, explain: "Sunday → day of week (capital) / I → always capital" },
+      { type: "fix", sentence: "The holidays start in december.", answer: "The holidays start in December.", explain: "december → December (month of the year)" },
+      { type: "choose", question: "Which sentence is correct?", choices: ["Every tuesday I have swimming lessons.", "Every Tuesday I have swimming lessons.", "Every Tuesday i have swimming lessons."], answer: 1, explain: "Tuesday → day (capital) / I → always capital" },
+      { type: "fix", sentence: "We visited london on a monday in july.", answer: "We visited London on a Monday in July.", explain: "london → London / monday → Monday / july → July" },
+      { type: "fix", sentence: "My favorite month is october.", answer: "My favorite month is October.", explain: "october → October (month of the year)" },
+    ]
+  },
+  5: {
+    name: "Mixed Practice",
+    emoji: "🌟",
+    color: "#1B3A6B",
+    tip: "All 4 rules together! Sentences, I, Names & Places, Days & Months!",
+    questions: [
+      { type: "fix", sentence: "my dog loves to run in the park.", answer: "My dog loves to run in the park.", explain: "my → My (start of sentence)" },
+      { type: "fix", sentence: "i have art class every friday.", answer: "I have art class every Friday.", explain: "i → I (always capital) / friday → Friday (day)" },
+      { type: "fix", sentence: "my friend oliver lives in london.", answer: "My friend Oliver lives in London.", explain: "my → My (start) / oliver → Oliver (name) / london → London (place)" },
+      { type: "fix", sentence: "every august we visit my grandma.", answer: "Every August we visit my grandma.", explain: "every → Every (start) / august → August (month)" },
+      { type: "fix", sentence: "i love saturdays because my dad makes pancakes.", answer: "I love Saturdays because my dad makes pancakes.", explain: "i → I (always capital) / saturdays → Saturdays (day)" },
+      { type: "fix", sentence: "my teacher miss ruby is very kind.", answer: "My teacher Miss Ruby is very kind.", explain: "my → My (start) / miss → Miss (title) / ruby → Ruby (name)" },
+      { type: "fix", sentence: "last monday i went to see dr. parker.", answer: "Last Monday I went to see Dr. Parker.", explain: "last → Last (start) / monday → Monday (day) / i → I / dr. → Dr. / parker → Parker" },
+      { type: "choose", question: "Which sentence is correct?", choices: ["Last September my friend Mia and I went to Berlin.", "Last september my friend Mia and I went to Berlin.", "Last September my friend mia and I went to Berlin."], answer: 0, explain: "September → month / Mia → name / I → always capital / Berlin → place" },
+      { type: "choose", question: "Which sentence is correct?", choices: ["Every monday in October Mrs. Stone takes us to see Dr. Hunt.", "Every Monday in October Mrs. Stone takes us to see Dr. Hunt.", "Every Monday in october Mrs. Stone takes us to see Dr. Hunt."], answer: 1, explain: "Monday → day / October → month / Mrs. Stone, Dr. Hunt → titles + names" },
+      { type: "fix", sentence: "last friday i visited my friend tom in bristol.", answer: "Last Friday I visited my friend Tom in Bristol.", explain: "last → Last / friday → Friday / i → I / tom → Tom / bristol → Bristol" },
+    ]
+  }
+};
+
+// ════════════════════════════════════════════════
+// GAME STATE
+// ════════════════════════════════════════════════
+
+let currentSection = 1;
+let currentQ = 0;
+let score = 0;
+let correct = 0;
+let wrong = 0;
+let answered = false;
+let questions = [];
+
+// ════════════════════════════════════════════════
+// FUNCTIONS
+// ════════════════════════════════════════════════
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startSection(n) {
+  currentSection = n;
+  currentQ = 0;
+  score = 0;
+  correct = 0;
+  wrong = 0;
+  answered = false;
+  questions = [...SECTIONS[n].questions];
+  // shuffle
+  questions.sort(() => Math.random() - 0.5);
+  showScreen('screen-quiz');
+  loadQuestion();
+}
+
+function loadQuestion() {
+  const sec = SECTIONS[currentSection];
+  const q = questions[currentQ];
+  const total = questions.length;
+
+  // Update header
+  document.getElementById('quiz-section-tag').textContent = `${sec.emoji} Section ${currentSection}`;
+  document.getElementById('score-display').textContent = score;
+  document.getElementById('q-counter').textContent = `Question ${currentQ + 1} of ${total}`;
+  document.getElementById('q-percent').textContent = Math.round((currentQ / total) * 100) + '%';
+  document.getElementById('progress-bar').style.width = ((currentQ / total) * 100) + '%';
+
+  // Reset
+  answered = false;
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('input-area').style.display = 'none';
+  document.getElementById('choices-area').style.display = 'none';
+  document.getElementById('q-sentence').style.display = 'none';
+
+  if (q.type === 'fix') {
+    document.getElementById('q-type-label').textContent = '✏️ Fix the Sentence';
+    document.getElementById('q-text').textContent = 'Rewrite this sentence correctly:';
+    document.getElementById('q-sentence').textContent = q.sentence;
+    document.getElementById('q-sentence').style.display = 'flex';
+
+    const input = document.getElementById('answer-input');
+    input.value = '';
+    input.className = 'answer-input';
+    input.disabled = false;
+    document.getElementById('input-area').style.display = 'block';
+    setTimeout(() => input.focus(), 100);
+
+  } else {
+    document.getElementById('q-type-label').textContent = '🔵 Choose the Correct Sentence';
+    document.getElementById('q-text').textContent = q.question;
+
+    const area = document.getElementById('choices-area');
+    area.innerHTML = '';
+    area.style.display = 'flex';
+    const letters = ['a', 'b', 'c', 'd'];
+    q.choices.forEach((choice, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.innerHTML = `<span class="choice-letter">${letters[i]}</span>${choice}`;
+      btn.onclick = () => checkChoice(i, btn);
+      area.appendChild(btn);
+    });
+  }
+}
+
+function normalise(str) {
+  return str.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function checkAnswer() {
+  if (answered) return;
+  const q = questions[currentQ];
+  const input = document.getElementById('answer-input');
+  const userAnswer = input.value.trim();
+
+  if (!userAnswer) {
+    input.style.borderColor = '#FFD94A';
+    input.placeholder = 'Please type your answer first!';
+    return;
+  }
+
+  answered = true;
+  input.disabled = true;
+
+  const isCorrect = normalise(userAnswer) === normalise(q.answer);
+
+  if (isCorrect) {
+    input.className = 'answer-input correct';
+    score += 10;
+    correct++;
+    showFeedback(true, '✅ Correct! +10 points!', q.explain);
+    if (correct % 3 === 0) launchConfetti();
+  } else {
+    input.className = 'answer-input wrong';
+    wrong++;
+    showFeedback(false, `❌ Not quite! The answer is:`, `"${q.answer}" — ${q.explain}`);
+  }
+
+  document.getElementById('score-display').textContent = score;
+  document.getElementById('next-btn').style.display = 'block';
+}
+
+function checkChoice(index, btn) {
+  if (answered) return;
+  answered = true;
+  const q = questions[currentQ];
+  const isCorrect = index === q.answer;
+
+  // disable all buttons
+  document.querySelectorAll('.choice-btn').forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.answer) b.className = 'choice-btn correct-choice';
+    else if (b === btn && !isCorrect) b.className = 'choice-btn wrong-choice';
+  });
+
+  if (isCorrect) {
+    score += 10;
+    correct++;
+    showFeedback(true, '✅ Correct! +10 points!', q.explain);
+    if (correct % 3 === 0) launchConfetti();
+  } else {
+    wrong++;
+    showFeedback(false, '❌ Not quite!', q.explain);
+  }
+
+  document.getElementById('score-display').textContent = score;
+  document.getElementById('next-btn').style.display = 'block';
+}
+
+function showFeedback(isCorrect, title, explain) {
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback show ' + (isCorrect ? 'correct-fb' : 'wrong-fb');
+  document.getElementById('fb-title').textContent = title;
+  document.getElementById('fb-explain').textContent = explain;
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    showResults();
+  } else {
+    loadQuestion();
+  }
+}
+
+function showResults() {
+  const total = questions.length;
+  const pct = Math.round((correct / total) * 100);
+
+  document.getElementById('final-score').textContent = score;
+  document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-wrong').textContent = wrong;
+  document.getElementById('stat-pct').textContent = pct + '%';
+
+  // Stars and message
+  let stars, message;
+  if (pct === 100) { stars = '⭐⭐⭐⭐⭐'; message = '🏆 PERFECT! Amazing work!'; launchConfetti(); }
+  else if (pct >= 80) { stars = '⭐⭐⭐⭐'; message = '🎉 Excellent! Well done!'; launchConfetti(); }
+  else if (pct >= 60) { stars = '⭐⭐⭐'; message = '👍 Good job! Keep practicing!'; }
+  else if (pct >= 40) { stars = '⭐⭐'; message = '💪 Keep trying, you can do it!'; }
+  else { stars = '⭐'; message = '📚 Read the section again and retry!'; }
+
+  document.getElementById('stars-display').textContent = stars;
+  document.getElementById('result-message').textContent = message;
+
+  // Update progress bar to 100%
+  document.getElementById('progress-bar').style.width = '100%';
+  document.getElementById('q-percent').textContent = '100%';
+
+  showScreen('screen-results');
+}
+
+function retrySection() { startSection(currentSection); }
+function backToMenu() { showScreen('screen-select'); }
+
+// ── Confetti ──
+function launchConfetti() {
+  const wrap = document.getElementById('confetti');
+  wrap.innerHTML = '';
+  const colors = ['#2BBFB0','#FFD94A','#FF6B6B','#7B5EA7','#27AE60','#1B3A6B'];
+  for (let i = 0; i < 60; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.cssText = `
+      left: ${Math.random() * 100}%;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      width: ${6 + Math.random() * 8}px;
+      height: ${6 + Math.random() * 8}px;
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      animation-duration: ${1.5 + Math.random() * 2}s;
+      animation-delay: ${Math.random() * 0.5}s;
+    `;
+    wrap.appendChild(piece);
+  }
+  setTimeout(() => wrap.innerHTML = '', 3500);
+}
+</script>
+</body>
+</html>
