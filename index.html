@@ -140,6 +140,7 @@
     <div class="section-bar">
       <span class="section-title-tag" id="quiz-section-tag">Section 1</span>
       <span class="score-badge">⭐ <span id="score-display">0</span> pts</span>
+      <button onclick="exitQuiz()" style="background:#FFE8E8;border:2px solid #FF6B6B;color:#FF6B6B;border-radius:10px;padding:6px 12px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:800;">🏠 Exit</button>
     </div>
     <div class="progress-info">
       <span id="q-counter">Question 1 of 10</span>
@@ -565,6 +566,16 @@ function showResults(){
 
 function retrySection(){startSection(currentSection);}
 function backToMenu(){showScreen('screen-select');}
+
+function exitQuiz(){
+  if(answered || currentQ === 0){
+    backToMenu();
+    return;
+  }
+  if(confirm("⚠️ Are you sure you want to exit? Your progress will be lost!")){
+    backToMenu();
+  }
+}
 
 function launchConfetti(){
   const wrap=document.getElementById('confetti');
