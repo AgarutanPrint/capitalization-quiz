@@ -324,16 +324,21 @@ function stripPunct(s){ return normalise(s).replace(/[.?!]$/,'').toLowerCase(); 
 
 function checkCapitals(user, correct){
   // Check capitalization only — strip punctuation but KEEP original case
-  const u = normalise(user).replace(/[.?!]$/,'');
-  const c = normalise(correct).replace(/[.?!]$/,'');
+  // Also normalize titles like Dr.Parker → Dr. Parker
+  const u = normalizeTitles(normalise(user).replace(/[.?!]$/,''));
+  const c = normalizeTitles(normalise(correct).replace(/[.?!]$/,''));
   return u === c;
 }
 
 function hasPunctuation(s){ return /[.?!]$/.test(s.trim()); }
 
+function normalizeTitles(s){
+  return s.replace(/([A-Za-z]+\.?)([A-Z])/g, '$1 $2').replace(/\s+/g,' ').trim();
+}
+
 function getWordAnalysis(userSentence, correctSentence){
-  const uWords = normalise(userSentence).replace(/[.?!]$/,'').split(' ');
-  const cWords = normalise(correctSentence).replace(/[.?!]$/,'').split(' ');
+  const uWords = normalizeTitles(normalise(userSentence).replace(/[.?!]$/,'')).split(' ');
+  const cWords = normalizeTitles(normalise(correctSentence).replace(/[.?!]$/,'')).split(' ');
   const result = [];
   const maxLen = Math.max(uWords.length, cWords.length);
   for(let i=0;i<maxLen;i++){
@@ -485,8 +490,20 @@ function checkAnswer(){
     const wrongWords=analysis.filter(w=>!w.correct).map(w=>w.word);
     let extraHint='';
     if(wrongWords.length>0){
-      extraHint='🔍 Check these words: '+wrongWords.map(w=>'"'+w+'"').join(', ')+
-        '\n✅ Correct answer: "'+q.answer+'"';
+      const cWordsAll = normalizeTitles(normalise(q.answer).replace(/[.?!]$/,'')).split(' ');
+      let wordHints = [];
+      wrongWords.forEach(function(w){
+        const wLower = w.toLowerCase();
+        const match = cWordsAll.find(function(cw){ return cw.toLowerCase()===wLower; });
+        if(match && match[0]===match[0].toLowerCase() && w[0]===w[0].toUpperCase()){
+          wordHints.push('"'+w+'" should be lowercase — not a name!');
+        } else if(match && match[0]===match[0].toUpperCase() && w[0]===w[0].toLowerCase()){
+          wordHints.push('"'+w+'" needs a capital letter!');
+        } else {
+          wordHints.push('"'+w+'" needs fixing');
+        }
+      });
+      extraHint = wordHints.join(' | ') + '  ✅ Correct: "' + q.answer + '"';
     }
     showFeedback('wrong','❌ Not quite! Check your capital letters!',q.explain,extraHint);
   }
